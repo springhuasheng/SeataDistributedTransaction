@@ -6,9 +6,9 @@ import cn.itcast.order.entity.Order;
 import cn.itcast.order.mapper.OrderMapper;
 import cn.itcast.order.service.OrderService;
 import feign.FeignException;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author 虎哥
@@ -28,7 +28,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
+    @GlobalTransactional
     public Long create(Order order) {
         // 创建订单
         orderMapper.insert(order);
@@ -37,7 +37,6 @@ public class OrderServiceImpl implements OrderService {
             accountClient.deduct(order.getUserId(), order.getMoney());
             // 扣库存
             storageClient.deduct(order.getCommodityCode(), order.getCount());
-
         } catch (FeignException e) {
             log.error("下单失败，原因:{}", e.contentUTF8(), e);
             throw new RuntimeException(e.contentUTF8(), e);
